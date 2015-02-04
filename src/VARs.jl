@@ -138,14 +138,16 @@ end
 ## This is only an example. I am thinking of having something like This
 ##
 ## VAR(OLS, Data, 5)                       ## Estimate a VAR(5) using OLS
-## VAR(OLS, Projection(options), Data, 5)  ## Estimate a VAR(5) using projection
-## VAR(Bayesian, MinnesotaPrior(tuning_pars), Data, 5)   ## BVAR using GIBBS
-## VAR(Bayesian, MinnesotaPrior(tuning_pars), Data, 5)   ## BVAR using GIBBS
-## VAR(Bayesian, OtherPriors(tuning_pars), Data, 5)   ## BVAR using GIBBS
+## This is the default, so we can do
+##
+## VAR(Data, 5)
 
-## For each of these I can the simply apply different methods:
+## VAR(Projection, Data, order, maxh)
 
-## var1 = VAR(LeastSquares, Data, 5)
+## Here order is an array --- since the order can be different for each lag length
+## maxh is the maximu lead length at which the var is estimated
+
+
 ## irf1 = irf(var1, h = 12)
 ## irf(var1, h = 12, shocks = ...)   ## I may want to specify a specific shock
 ## plot(irf1)
