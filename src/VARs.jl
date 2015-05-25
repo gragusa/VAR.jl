@@ -166,10 +166,40 @@ end
 
 VAR(Y, order; kwargs...) = fit(LinearVarModel, Y, order; kwargs...) 
 
+function irf(VAR::LinearVarModel, H::Int64, p::Int64, cholesky::Bool=true)
+         # Default Cholesky identification and estimation with intercept
+         K = size(VAR.pp.SS,1) # Number of variables          
+         if cholesky == true Sigma =  chol(VAR.pp.SS)' else Sigma = eye(K,K) end # Cholesky or reduced form
+         B0 = VAR.pp.B0'[:,2:end]
+         B0 = [B0;[eye(K*(p-1)) zeros(K*(p-1),K)]] # Companion form 
+         J = [eye(K,K) zeros(K,K*(p-1))]
+         IRF = reshape((J*B0^0*J'*Sigma)',K^2,1)
+         for i = 1:H
+             IRF = [IRF reshape((J*B0^i*J'*Sigma)',K^2,1)] #Cholesky here has also the intercept 
+         end
+         return IRF
+end
+
+# Allow to specify a particular shock
+function irf(VAR::LinearVarModel, H::Int64, shock::Int64, p::Int64, cholesky::Bool=true)
+         # Default Cholesky identification
+         K = size(VAR.pp.SS,1) # Number of variables          
+         if cholesky == true Sigma = chol(VAR.pp.SS)' else Sigma = eye(K,K) end # Cholesky or reduced form
+         if abs(shock)>K error("shock must be between 1 and $k") end # Check on shock number
+         B0 = VAR.pp.B0'[:,2:end]
+         B0 = [B0;[eye(K*(p-1)) zeros(K*(p-1),K)]] # Companion form 
+         J = [eye(K,K) zeros(K,K*(p-1))]
+         IRF = reshape((J*B0^0*J'*Sigma)',K^2,1) # before B0^0 why?
+         for i = 1:H
+             IRF = [IRF reshape((J*B0^i*J'*Sigma)',K^2,1)] #Cholesky here has also the intercept 
+         end
+         IRFs = zeros(K,H+1)
+         IRFs[:,:] = IRF[shock:K:(size(IRF,1)-K+shock),:]
+         return IRFs
+end
 
 
-
-export VAR
+export VAR, irf
 
 # package code goes here
 
